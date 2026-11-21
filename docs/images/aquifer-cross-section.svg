@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="370" viewBox="0 0 920 370" role="img" aria-labelledby="title desc">
+  <title id="title">海平面与地下洞穴的局部液面</title>
+  <desc id="desc">左侧海面参考高度为 Y 等于 63。地下有水洞穴和干燥洞穴的底部位于相近高度，虚线标出两个处于同一高度的位置，左边在水中，右边在空气中。更深处示意了局部熔岩。</desc>
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #172826; font-size: 16px; }
+      .heading { font-size: 20px; font-weight: 700; }
+      .water-label { fill: #205b80; }
+      .guide { stroke: #4a6f76; stroke-width: 1.4; stroke-dasharray: 6 6; }
+    </style>
+    <path id="wet" d="M243 213 C245 185 278 173 300 183 C318 178 337 164 370 176 C402 187 425 198 416 222 C409 243 381 251 350 244 C323 240 290 257 260 241 C248 234 242 224 243 213 Z"/>
+    <path id="dry" d="M477 210 C477 188 509 174 535 182 C564 190 582 166 615 179 C635 191 655 211 641 230 C624 251 598 247 573 240 C544 234 525 254 502 241 C485 232 477 223 477 210 Z"/>
+    <path id="lava" d="M658 284 C667 263 693 256 721 267 C749 273 767 253 796 258 C827 261 843 276 841 290 C838 312 811 319 784 315 C750 311 710 324 682 314 C666 308 656 296 658 284 Z"/>
+    <clipPath id="wet-floor"><use href="#wet"/></clipPath>
+    <clipPath id="lava-floor"><use href="#lava"/></clipPath>
+    <clipPath id="panel"><rect x="32" y="61" width="856" height="275" rx="11"/></clipPath>
+  </defs>
+  <rect x="1" y="1" width="918" height="368" rx="20" fill="#f6f9f7" stroke="#dce6e1"/>
+  <text x="32" y="39" class="heading">海水与地下液面</text>
+  <g clip-path="url(#panel)">
+    <rect x="32" y="61" width="856" height="275" fill="#e8f3f8"/>
+    <path d="M32 176 C128 182 185 164 236 115 H32 Z" fill="#91cae8"/>
+    <path d="M32 176 C128 182 185 164 236 115 C276 82 345 76 405 99 C467 121 513 95 564 86 C629 73 672 107 735 102 C807 96 835 80 888 93 V336 H32 Z" fill="#e2d6bf"/>
+    <path d="M236 115 C276 82 345 76 405 99 C467 121 513 95 564 86 C629 73 672 107 735 102 C807 96 835 80 888 93" fill="none" stroke="#6e9364" stroke-width="6"/>
+    <path d="M32 115 H888" class="guide"/>
+    <use href="#wet" fill="#f3f9fc"/>
+    <use href="#dry" fill="#f3f9fc"/>
+    <use href="#lava" fill="#f9eee6"/>
+    <g clip-path="url(#wet-floor)">
+      <rect x="235" y="209" width="190" height="50" fill="#91cae8"/>
+      <path d="M235 209 H425" stroke="#347da4" stroke-width="2"/>
+    </g>
+    <g clip-path="url(#lava-floor)">
+      <rect x="652" y="287" width="200" height="36" fill="#f2a06d"/>
+      <path d="M652 287 H852" stroke="#ad5526" stroke-width="2"/>
+    </g>
+    <use href="#wet" fill="none" stroke="#7b786a" stroke-width="1.5"/>
+    <use href="#dry" fill="none" stroke="#7b786a" stroke-width="1.5"/>
+    <use href="#lava" fill="none" stroke="#7b786a" stroke-width="1.5"/>
+    <path d="M332 223 H562" class="guide"/>
+    <circle cx="332" cy="223" r="6" fill="#205b80" stroke="#fff" stroke-width="2"/>
+    <circle cx="562" cy="223" r="6" fill="#425e56" stroke="#fff" stroke-width="2"/>
+  </g>
+  <text x="50" y="102" class="water-label">海平面 Y = 63</text>
+  <text x="100" y="149" text-anchor="middle" class="water-label">海水</text>
+  <g text-anchor="middle">
+    <text x="332" y="199">有水洞穴</text>
+    <text x="562" y="201">干燥洞穴</text>
+    <text x="448" y="247">相同高度</text>
+    <text x="752" y="307" fill="#713211">局部熔岩</text>
+  </g>
+</svg>

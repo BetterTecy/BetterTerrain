@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="418" viewBox="0 0 920 418" role="img" aria-labelledby="title desc">
+  <title id="title">主世界生物群系参数的来源</title>
+  <desc id="desc">温度、湿度、大陆度、侵蚀和奇异度来自由种子初始化的水平噪声。深度来自高度梯度和水平地形偏移。同一 X、Z 上，图中 Y 等于 128 时深度为 0.05，Y 等于 0 时深度为 1.05。两路值组成六维样本，再与各群系的参数范围比较。</desc>
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #172826; }
+      .heading { font-size: 20px; font-weight: 700; }
+      .detail { font-size: 15px; fill: #435a56; }
+      .edge { fill: none; stroke: #52706c; stroke-width: 1.6; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1 1 L7 4.5 L1 8" fill="none" stroke="#52706c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect x="1" y="1" width="918" height="416" rx="20" fill="#f6f9f7" stroke="#dce6e1"/>
+  <text x="32" y="38" class="heading">从采样坐标到生物群系</text>
+  <rect x="32" y="63" width="403" height="156" rx="12" fill="#eaf3ef" stroke="#9abfb1"/>
+  <text x="54" y="96" class="heading">世界种子 + X、Z</text>
+  <text x="54" y="124" class="detail">在五种噪声上采样。固定 X、Z，改变 Y，值保持相同。</text>
+  <g text-anchor="middle" font-size="15">
+    <rect x="54" y="153" width="55" height="33" rx="8" fill="#fff"/>
+    <text x="81" y="174">温度</text>
+    <rect x="121" y="153" width="55" height="33" rx="8" fill="#fff"/>
+    <text x="148" y="174">湿度</text>
+    <rect x="188" y="153" width="66" height="33" rx="8" fill="#fff"/>
+    <text x="221" y="174">大陆度</text>
+    <rect x="266" y="153" width="55" height="33" rx="8" fill="#fff"/>
+    <text x="293" y="174">侵蚀</text>
+    <rect x="333" y="153" width="78" height="33" rx="8" fill="#fff"/>
+    <text x="372" y="174">奇异度</text>
+  </g>
+  <rect x="485" y="63" width="403" height="156" rx="12" fill="#f4eee3" stroke="#d7c6aa"/>
+  <text x="507" y="96" class="heading">Y 高度梯度 + 地形偏移</text>
+  <text x="507" y="124" class="detail">同一列在不同高度会得到不同深度。</text>
+  <rect x="507" y="141" width="358" height="58" rx="8" fill="#fff"/>
+  <g class="detail">
+    <text x="519" y="164">Y = 128</text>
+    <text x="614" y="164">0.00 + 0.05</text>
+    <text x="762" y="164">深度 0.05</text>
+    <text x="519" y="187">Y = 0</text>
+    <text x="614" y="187">1.00 + 0.05</text>
+    <text x="762" y="187">深度 1.05</text>
+  </g>
+  <path d="M234 219 V249 H398 V263" class="edge"/>
+  <path d="M686 219 V249 H522 V263" class="edge"/>
+  <rect x="236" y="268" width="448" height="54" rx="11" fill="#fff" stroke="#ccd8d4"/>
+  <text x="460" y="301" class="heading" text-anchor="middle">组合成六维样本</text>
+  <path d="M460 322 V344" class="edge"/>
+  <rect x="236" y="349" width="448" height="44" rx="11" fill="#dbede7" stroke="#4d8976"/>
+  <text x="460" y="377" font-size="17" font-weight="700" text-anchor="middle">比较各群系的参数范围，选择得分最低的一组</text>
+</svg>

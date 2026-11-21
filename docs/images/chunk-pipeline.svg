@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="367" viewBox="0 0 920 367" role="img" aria-labelledby="title desc">
+  <title id="title">Minecraft Java 26.3 区块生成流程</title>
+  <desc id="desc">先确定结构起点和引用，然后写入生物群系。地形阶段依次进行基础填充、材质规则、雕刻。随后放置结构和特征，最后处理光照与初始生物。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1 1 L7 4.5 L1 8" fill="none" stroke="#52706c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #172826; }
+      .heading { font-size: 20px; font-weight: 700; }
+      .detail { font-size: 14px; fill: #435a56; }
+      .box { fill: #fff; stroke: #ccd8d4; stroke-width: 1.4; }
+      .edge { fill: none; stroke: #52706c; stroke-width: 1.6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect x="1" y="1" width="918" height="365" rx="20" fill="#f6f9f7" stroke="#dce6e1"/>
+  <text x="24" y="37" class="heading">新区块的生成顺序</text>
+  <rect x="24" y="58" width="152" height="89" rx="12" class="box"/>
+  <rect x="204" y="58" width="152" height="89" rx="12" class="box"/>
+  <rect x="384" y="58" width="152" height="89" rx="12" fill="#dbede7" stroke="#4d8976" stroke-width="1.6"/>
+  <rect x="564" y="58" width="152" height="89" rx="12" class="box"/>
+  <rect x="744" y="58" width="152" height="89" rx="12" class="box"/>
+  <g text-anchor="middle">
+    <text x="100" y="98" class="heading">结构选址</text>
+    <text x="100" y="123" class="detail">起点与跨区块引用</text>
+    <text x="280" y="98" class="heading">生物群系</text>
+    <text x="280" y="123" class="detail">给三维位置匹配群系</text>
+    <text x="460" y="98" class="heading">生成地形</text>
+    <text x="460" y="123" class="detail">TERRAIN</text>
+    <text x="640" y="98" class="heading">放置内容</text>
+    <text x="640" y="123" class="detail">结构、植被、普通矿团</text>
+    <text x="820" y="98" class="heading">收尾</text>
+    <text x="820" y="123" class="detail">光照与初始生物</text>
+  </g>
+  <path d="M180 103 H200" class="edge"/>
+  <path d="M360 103 H380" class="edge"/>
+  <path d="M540 103 H560" class="edge"/>
+  <path d="M720 103 H740" class="edge"/>
+  <path d="M460 147 V175" class="edge"/>
+  <rect x="24" y="179" width="872" height="164" rx="15" fill="#eaf3ef" stroke="#9abfb1"/>
+  <text x="46" y="214" class="heading">TERRAIN 阶段内部</text>
+  <rect x="46" y="231" width="249" height="87" rx="10" class="box"/>
+  <rect x="335" y="231" width="249" height="87" rx="10" class="box"/>
+  <rect x="624" y="231" width="249" height="87" rx="10" class="box"/>
+  <path d="M301 274 H329" class="edge"/>
+  <path d="M590 274 H618" class="edge"/>
+  <g text-anchor="middle">
+    <text x="170" y="267" class="heading">填充基础方块</text>
+    <text x="170" y="293" class="detail">密度和含水层决定石头、空气与流体</text>
+    <text x="459" y="267" class="heading">应用材质规则</text>
+    <text x="459" y="293" class="detail">生成草、沙、岩层及大型矿脉</text>
+    <text x="748" y="267" class="heading">执行雕刻</text>
+    <text x="748" y="293" class="detail">在已有方块中挖出隧道和峡谷</text>
+  </g>
+</svg>
