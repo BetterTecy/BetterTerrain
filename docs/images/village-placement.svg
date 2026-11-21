@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="413" viewBox="0 0 920 413" role="img" aria-labelledby="title desc">
+  <title id="title">村庄候选区块的抽取方式</title>
+  <desc id="desc">图中为种子 12345 的四个村庄候选区域。每区域边长 34 个区块，浅绿色区域边长 26 个区块，右边和下边各留出 8 个区块。四个圆点分别是候选区块 (21, 5)、(53, 16)、(10, 55) 和 (54, 36)，还需通过结构条件检查。</desc>
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #172826; font-size: 15px; }
+      .heading { font-size: 20px; font-weight: 700; }
+      .step { font-size: 17px; font-weight: 700; }
+      .note { fill: #435a56; }
+      .region { font-size: 13px; fill: #435a56; }
+      .point { fill: #205f57; stroke: #fff; stroke-width: 2; }
+    </style>
+    <pattern id="reserved" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#c5cec9" stroke-width="1.2"/>
+    </pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M1 1 L7 4 L1 7" fill="none" stroke="#52706c" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect x="1" y="1" width="918" height="411" rx="20" fill="#f6f9f7" stroke="#dce6e1"/>
+  <text x="32" y="38" class="heading">村庄候选区块 · 种子 12345</text>
+  <g fill="none" stroke="#52706c" stroke-width="1.4" marker-end="url(#arrow)">
+    <path d="M80 74 H366"/>
+    <path d="M64 90 V375"/>
+  </g>
+  <text x="376" y="79" class="note">区块 X</text>
+  <text x="34" y="395" class="note">区块 Z</text>
+  <rect x="80" y="90" width="272" height="272" fill="#eef0ea"/>
+  <rect x="80" y="90" width="272" height="272" fill="url(#reserved)"/>
+  <g fill="#d8ece3">
+    <rect x="80" y="90" width="104" height="104"/>
+    <rect x="216" y="90" width="104" height="104"/>
+    <rect x="80" y="226" width="104" height="104"/>
+    <rect x="216" y="226" width="104" height="104"/>
+  </g>
+  <g fill="none" stroke="#688780" stroke-width="1.5">
+    <rect x="80" y="90" width="272" height="272"/>
+    <path d="M216 90 V362 M80 226 H352"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="148" y="215" class="region">区域 (0, 0)</text>
+    <text x="284" y="215" class="region">区域 (1, 0)</text>
+    <text x="148" y="351" class="region">区域 (0, 1)</text>
+    <text x="284" y="351" class="region">区域 (1, 1)</text>
+  </g>
+  <circle cx="166" cy="112" r="6" class="point"/>
+  <text x="156" y="132" text-anchor="end">(21, 5)</text>
+  <circle cx="294" cy="156" r="6" class="point"/>
+  <text x="284" y="176" text-anchor="end">(53, 16)</text>
+  <circle cx="122" cy="312" r="6" class="point"/>
+  <text x="132" y="302">(10, 55)</text>
+  <circle cx="298" cy="236" r="6" class="point"/>
+  <text x="288" y="256" text-anchor="end">(54, 36)</text>
+  <g>
+    <rect x="444" y="77" width="444" height="75" rx="11" fill="#fff" stroke="#ccd8d4"/>
+    <text x="462" y="106" class="step">1. 按 34 × 34 个区块划分区域</text>
+    <text x="462" y="132" class="note">spacing = 34，区域 (1, 0) 从区块 (34, 0) 开始。</text>
+    <rect x="444" y="162" width="444" height="98" rx="11" fill="#eaf3ef" stroke="#9abfb1"/>
+    <text x="462" y="191" class="step">2. 从绿色范围抽取一个候选区块</text>
+    <text x="462" y="217" class="note">separation = 8，斜线带留空，可抽范围是 26 × 26。</text>
+    <text x="462" y="239" class="note">种子、区域坐标和 salt 共同决定圆点的位置。</text>
+    <rect x="444" y="270" width="444" height="75" rx="11" fill="#fff" stroke="#ccd8d4"/>
+    <text x="462" y="299" class="step">3. 检查群系和结构生成条件</text>
+    <text x="462" y="325" class="note">通过后才记录结构起点。</text>
+  </g>
+</svg>

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "betterterrain",
+  "version": "${version}",
+  "name": "BetterTerrain",
+  "description": "A terrain generation mod for Minecraft 26.3. Initial development skeleton.",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.betterterrain.BetterTerrain"],
+    "client": ["dev.betterterrain.client.BetterTerrainClient"],
+    "fabric-datagen": ["dev.betterterrain.datagen.BetterTerrainDataGenerator"]
+  },
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": ">=0.166.2+26.3"
+  }
+}

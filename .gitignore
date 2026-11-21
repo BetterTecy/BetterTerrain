@@ -1,0 +1,37 @@
+# Gradle 缓存与构建产物
+.gradle/
+/.gradle-cache/
+build/
+out/
+
+# IDE 与本机工具配置
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# GitHub 与 Codex 配置
+/.github/
+/.codex/
+
+# 本地游戏实例、存档和日志
+run/
+runs/
+logs/
+crash-reports/
+/saves/
+/world/
+/eula.txt
+/server.properties
+
+# JVM 崩溃日志与堆转储
+hs_err_pid*.log
+replay_pid*.log
+java_pid*.hprof
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini

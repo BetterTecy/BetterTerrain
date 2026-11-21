@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="405" viewBox="0 0 920 405" role="img" aria-labelledby="title desc">
+  <title id="title">三维密度如何形成洞穴剖面</title>
+  <desc id="desc">左侧剖面的虚线标出同一垂直列。右侧在相同高度上从上到下示意四个密度值：负、正、负、正，分别对应地表空气、洞顶岩石、洞内空隙和洞底岩石。</desc>
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #172826; font-size: 16px; }
+      .heading { font-size: 20px; font-weight: 700; }
+      .secondary { fill: #435a56; }
+      .guide { stroke: #82958f; stroke-width: 1.2; stroke-dasharray: 5 6; }
+      .rock { fill: #694d32; }
+      .air { fill: #205b80; }
+    </style>
+    <pattern id="rock-pattern" width="32" height="23" patternUnits="userSpaceOnUse">
+      <path d="M0 22 H32 M20 2 H29 M4 12 H10" stroke="#a8967b" opacity=".42" stroke-width="1"/>
+    </pattern>
+    <clipPath id="panel">
+      <rect x="36" y="60" width="462" height="275" rx="10"/>
+    </clipPath>
+  </defs>
+  <rect x="1" y="1" width="918" height="403" rx="20" fill="#f6f9f7" stroke="#dce6e1"/>
+  <text x="36" y="39" class="heading">地形剖面</text>
+  <text x="547" y="39" class="heading">沿同一列取样</text>
+  <g clip-path="url(#panel)">
+    <rect x="36" y="60" width="462" height="275" fill="#e8f3f8"/>
+    <path d="M36 180 L88 171 L139 143 L176 150 L222 121 L267 110 L307 116 L350 129 L388 145 L442 156 L498 172 V335 H36 Z" fill="#e2d6bf"/>
+    <path d="M36 180 L88 171 L139 143 L176 150 L222 121 L267 110 L307 116 L350 129 L388 145 L442 156 L498 172 V335 H36 Z" fill="url(#rock-pattern)"/>
+    <path d="M36 180 L88 171 L139 143 L176 150 L222 121 L267 110 L307 116 L350 129 L388 145 L442 156 L498 172" fill="none" stroke="#6e9364" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M153 225 C162 204 199 186 240 201 C272 212 296 183 342 186 C390 185 435 210 411 235 C388 255 355 253 315 260 C267 266 243 245 209 249 C176 253 144 245 153 225 Z" fill="#f1f7fa" stroke="#78949e" stroke-width="2"/>
+  </g>
+  <line x1="76" y1="306" x2="76" y2="79" stroke="#435a56" stroke-width="1.6"/>
+  <path d="M70 86 L76 79 L82 86" fill="none" stroke="#435a56" stroke-width="1.6"/>
+  <text x="87" y="96" class="secondary">Y 向上</text>
+  <path d="M333 61 V335" class="guide"/>
+  <path d="M333 86 H632 M333 151 H755 M333 222 H620 M333 300 H769" class="guide"/>
+  <rect x="547" y="60" width="143" height="275" rx="8" fill="#e8f3f8" opacity=".58"/>
+  <rect x="690" y="60" width="185" height="275" rx="8" fill="#efe7d8" opacity=".62"/>
+  <line x1="690" y1="59" x2="690" y2="337" stroke="#536a64" stroke-width="1.5" stroke-dasharray="5 5"/>
+  <path d="M632 86 C647 103 768 124 755 151 S615 193 620 222 S749 267 769 300" fill="none" stroke="#205f57" stroke-width="3"/>
+  <g stroke="#fff" stroke-width="2">
+    <circle cx="333" cy="86" r="6" class="air"/><circle cx="632" cy="86" r="6" class="air"/>
+    <circle cx="333" cy="151" r="6" class="rock"/><circle cx="755" cy="151" r="6" class="rock"/>
+    <circle cx="333" cy="222" r="6" class="air"/><circle cx="620" cy="222" r="6" class="air"/>
+    <circle cx="333" cy="300" r="6" class="rock"/><circle cx="769" cy="300" r="6" class="rock"/>
+  </g>
+  <text x="558" y="91" class="air">地表空气</text>
+  <text x="772" y="156" class="rock">洞顶岩石</text>
+  <text x="544" y="227" class="air">洞内空隙</text>
+  <text x="786" y="305" class="rock">洞底岩石</text>
+  <g text-anchor="middle">
+    <text x="333" y="368" class="secondary">固定 X、Z 的一列</text>
+    <text x="614" y="368" class="air">密度 &lt; 0</text>
+    <text x="690" y="368" class="secondary">0</text>
+    <text x="774" y="368" class="rock">密度 &gt; 0</text>
+  </g>
+</svg>
