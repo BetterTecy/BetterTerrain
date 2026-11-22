@@ -3,7 +3,7 @@
   "id": "betterterrain",
   "version": "${version}",
   "name": "BetterTerrain",
-  "description": "A terrain generation mod for Minecraft 26.3. Initial development skeleton.",
+  "description": "Long mountain ranges for Minecraft 26.3.",
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
@@ -11,6 +11,10 @@
     "client": ["dev.betterterrain.client.BetterTerrainClient"],
     "fabric-datagen": ["dev.betterterrain.datagen.BetterTerrainDataGenerator"]
   },
+  "mixins": [
+    "betterterrain.mixins.json",
+    {"config": "betterterrain.client.mixins.json", "environment": "client"}
+  ],
   "depends": {
     "fabricloader": ">=0.20.1",
     "minecraft": "~26.3",

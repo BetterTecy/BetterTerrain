@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:add",
+  "left": {
+    "type": "minecraft:min",
+    "left": {
+      "type": "minecraft:mul",
+      "left": 16.0,
+      "right": "betterterrain:terrain_depth"
+    },
+    "right": "minecraft:overworld/caves/noodle"
+  },
+  "right": {"type": "minecraft:beardifier"}
+}

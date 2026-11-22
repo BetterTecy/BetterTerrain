@@ -33,6 +33,16 @@
 
 ## 世界生成验收
 
+### PCL 实例一键启动
+
+按照 [README](README.md#在-minecraft-中查看山脉) 设置本机配置，关闭已经运行的实例。在项目目录双击 `launch-terrain-preview.bat`，或分别执行 `.\launch-terrain-preview.bat` 与 `.\launch-terrain-preview.bat 12345`。每次退出游戏后复跑同一种子一次。
+
+- 两次首次启动均须自动进入创造模式。查看项目的 `run/minecraft-preview/*/result.txt`，核对 `seed`、`mode`、`preset=betterterrain:terrain_preview` 与 `action=created`。
+- 签名中的 `crest` 为实际区块高度图坐标，`modelSurface` 是同坐标宏观高程。测试山脊的游戏高度要与模型接近，考虑插值、方块取整和地表特征。使用 F3 核对玩家在山脊附近并能飞行。核对两个种子的存档分目录，均产生真实的 `level.dat` 和区块文件。
+- 二次启动的结果须为 `action=reopened`，仍为同一个存档目录，并在上次停留的位置出现。旧实例模组替换时须存在 `.jar.bak`。超界种子 `9223372036854775808` 应在构建和启动前报错。
+
+长条山脉、混合山地采样器和本地网页按[宏观地貌模块验收](src/main/java/dev/betterterrain/worldgen/landscape/HARNESS.md)执行，基础构建同时运行 `checkTerrainPreview`。
+
 每个地形或群系的设计样例至少记录种子、预设 ID、配置版本或摘要、方块坐标及预期。世界生成变更至少使用两个固定种子。样例合计覆盖正负坐标、X/Z 轴的区块边界，并沿至少两条穿越代表性地形的剖面取样。对照世界保持同样的种子、坐标和采样方式，使用新存档，避免复用旧区块。
 
 | 验收项 | 判定方法 |

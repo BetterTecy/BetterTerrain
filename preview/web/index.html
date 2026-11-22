@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>山地与山脉 · BetterTerrain</title>
+    <link rel="stylesheet" href="./style.css">
+    <script type="importmap">{"imports":{"three":"./vendor/build/three.module.min.js"}}</script>
+    <script type="module" src="./preview.js"></script>
+</head>
+<body>
+    <main>
+        <header class="heading">
+            <div>
+                <div class="brand"><span class="brand-mark" aria-hidden="true"></span>BetterTerrain</div>
+                <h1>山地与山脉</h1>
+            </div>
+            <label class="seed-label">观察窗口 <select id="seed" aria-label="观察窗口" disabled></select></label>
+        </header>
+        <div class="workspace">
+            <section class="view-panel" aria-label="三维地形">
+                <div class="toolbar">
+                    <div class="segmented" aria-label="预览范围">
+                        <button type="button" data-level="overview" aria-pressed="true">全景</button>
+                        <button type="button" data-level="section" aria-pressed="false">山段</button>
+                        <button type="button" data-level="detail" aria-pressed="false">近景</button>
+                        <button type="button" data-level="blocks" aria-pressed="false">方块</button>
+                    </div>
+                    <button type="button" id="flight" class="subtle" aria-pressed="false" disabled>自由飞行</button>
+                    <label class="cloud-control"><input id="cloud" type="checkbox"> 云层参考面</label>
+                    <button type="button" id="reset" class="subtle">重置视角</button>
+                </div>
+                <div id="view" class="viewport">
+                    <div class="view-metrics" aria-live="polite">
+                        <strong id="extent">16,384 × 16,384</strong>
+                        <span id="sampling">世界方块</span>
+                    </div>
+                    <div id="markers" class="markers" aria-hidden="true"></div>
+                    <div id="status" class="status" role="status">正在载入地形…</div>
+                    <div id="view-help" class="view-help">拖动旋转 · 滚轮靠近 · 右键平移</div>
+                    <output id="flight-position" class="flight-position" hidden></output>
+                </div>
+            </section>
+            <aside class="side-panel">
+                <div class="side-heading">
+                    <h2>地形总览</h2>
+                    <span id="length"></span>
+                </div>
+                <div class="map">
+                    <canvas id="map" width="420" height="306" role="img" aria-label="山脉俯视图，北方朝上，编号对应下方地标"></canvas>
+                    <div class="map-orientation" aria-hidden="true">北 ↑</div>
+                </div>
+                <div id="landmarks" class="landmarks" aria-label="地标"></div>
+                <div class="point-data" aria-live="polite">
+                    <div>
+                        <span id="point-name">主峰</span>
+                        <strong id="elevation">—</strong>
+                    </div>
+                    <div>
+                        <span id="position"></span>
+                        <strong id="cloud-gap"></strong>
+                    </div>
+                </div>
+                <p class="datum" id="datum"></p>
+            </aside>
+        </div>
+        <section class="profile-panel" aria-label="地形剖面">
+            <header class="side-heading">
+                <h2>高程剖面</h2>
+                <div class="segmented" aria-label="剖面方向">
+                    <button type="button" data-profile="ridge" aria-pressed="true">沿主脊</button>
+                    <button type="button" data-profile="cross" aria-pressed="false">横穿山峰</button>
+                </div>
+            </header>
+            <canvas id="profile" role="img" aria-label="地形高程剖面，横轴为距离，纵轴为世界坐标 Y"></canvas>
+        </section>
+    </main>
+</body>
+</html>

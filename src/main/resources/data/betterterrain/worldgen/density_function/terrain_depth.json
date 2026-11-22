@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:mul",
+  "left": 0.0078125,
+  "right": {
+    "type": "minecraft:sub",
+    "left": "betterterrain:terrain_height",
+    "right": "minecraft:y"
+  }
+}
