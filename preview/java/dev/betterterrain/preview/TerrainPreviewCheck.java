@@ -1,8 +1,13 @@
 package dev.betterterrain.preview;
 
 import dev.betterterrain.worldgen.landscape.LongMountainRange;
+import dev.betterterrain.worldgen.landscape.LongMountainRange.Position;
+import dev.betterterrain.worldgen.landscape.MixedMountainRegion;
+import dev.betterterrain.worldgen.landscape.MixedMountainRegion.Feature;
+import dev.betterterrain.worldgen.landscape.MixedMountainRegion.Kind;
 import dev.betterterrain.worldgen.landscape.MountainRegion;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +26,107 @@ final class TerrainPreviewCheck {
             checkLandforms(range, seed);
             checkWindowEdges(range, seed);
             checkWorld(seed);
+            checkMixedWorld(seed);
+        }
+    }
+
+    private static void checkMixedWorld(long seed) {
+        var region = new MixedMountainRegion(seed);
+        var parallel = new MixedMountainRegion(seed);
+        int total = 0;
+        int windows = 0;
+        int half = MixedMountainRegion.TILE_SIZE / 2;
+        for (int[] center : TerrainPreview.VIEW_CENTERS) {
+            int x = center[0] - half;
+            int z = center[1] - half;
+            checkMixedWindow(region, seed, x, z);
+            for (int dx : new int[] {-3_000, 0, 3_000}) {
+                for (int dz : new int[] {-3_000, 0, 3_000}) {
+                    total += (int) region.featuresInWindow(x + dx, z + dz, MixedMountainRegion.TILE_SIZE)
+                            .stream().filter(feature -> feature.kind() != Kind.MASSIF).count();
+                    windows++;
+                }
+            }
+            IntStream.range(0, 256).parallel().forEach(i -> {
+                int k = (255 - i) * 67;
+                require(region.height(x, z + k) == parallel.height(x, z + k)
+                        && region.height(x + k, z) == parallel.height(x + k, z), seed, "混合山地并行确定性");
+                require(Math.abs(region.height(x - 1, z + k) - region.height(x, z + k)) <= 4
+                        && Math.abs(region.height(x + k, z - 1) - region.height(x + k, z)) <= 4,
+                        seed, "混合山地跨区连续");
+            });
+        }
+        double average = total / (double) windows;
+        require(average >= 7 && average <= 9, seed, "混合山脉偏移窗口密度");
+        System.out.printf(java.util.Locale.ROOT, "种子 %d：混合山脉 %d 个偏移窗口平均 %.2f 条，形态与边界通过%n",
+                seed, windows, average);
+    }
+
+    private static void checkMixedWindow(MixedMountainRegion region, long seed, int x, int z) {
+        var features = region.featuresInWindow(x, z, MixedMountainRegion.TILE_SIZE);
+        var counts = new EnumMap<Kind, Integer>(Kind.class);
+        var ids = new HashSet<String>();
+        int tall = 0;
+        for (Feature feature : features) {
+            require(ids.add(feature.id()), seed, "混合山地标识唯一");
+            counts.merge(feature.kind(), 1, Integer::sum);
+            for (Position summit : feature.summits()) {
+                double altitude = region.height(summit.x(), summit.z());
+                if (altitude > 384) {
+                    require(altitude >= 392 - 0.00001 && altitude <= 408, seed, "探云峰高程");
+                    tall++;
+                }
+            }
+            switch (feature.kind()) {
+                case ARC -> {
+                    double angle = Math.abs(Math.toDegrees(feature.main().turn()));
+                    require(angle >= 65 && angle <= 110, seed, "弧形山脉连续转向");
+                    Position start = feature.main().position(0, 0);
+                    Position end = feature.main().position(1, 0);
+                    for (double t : new double[]{0.44, 0.50, 0.56}) {
+                        double height = region.height(start.x() + t * (end.x() - start.x()),
+                                start.z() + t * (end.z() - start.z()));
+                        require(height <= BASE + 55, seed, "弧形山脉开口通向低地");
+                    }
+                }
+                case BRANCHED -> {
+                    require(feature.connections().size() >= 1 && feature.connections().size() <= 2, seed, "分支数量");
+                    for (var branch : feature.connections()) {
+                        Position root = branch.position(0, 0);
+                        Position middle = branch.position(0.5, 0);
+                        Position tip = branch.position(1.0, 0);
+                        require(branch.length() >= 1_200 && branch.length() <= 2_400
+                                && Math.abs(feature.main().height(root.x(), root.z()) - branch.height(root.x(), root.z())) < 0.01
+                                && branch.height(middle.x(), middle.z()) > BASE + 70
+                                && Math.abs(branch.height(tip.x(), tip.z()) - BASE) < 0.01, seed, "分支平滑汇接并衰减");
+                    }
+                }
+                case MASSIF -> {
+                    var peaks = feature.summits();
+                    require(peaks.size() >= 3 && peaks.size() <= 5 && feature.connections().size() == peaks.size() - 2,
+                            seed, "块状山地的主峰与短脊数量");
+                    for (int i = 0; i < peaks.size(); i++) {
+                        Position peak = peaks.get(i);
+                        for (int j = 0; j < i; j++) {
+                            Position other = peaks.get(j);
+                            require(Math.hypot(peak.x() - other.x(), peak.z() - other.z()) >= 512,
+                                    seed, "块状山地主峰间距");
+                        }
+                    }
+                }
+                default -> { }
+            }
+        }
+        require(counts.equals(java.util.Map.of(Kind.LONG, 4, Kind.ARC, 1, Kind.PARALLEL, 2, Kind.BRANCHED, 1, Kind.MASSIF, 1)),
+                seed, "混合全景组成");
+        require(tall == 2, seed, "混合全景探云峰名额");
+        var pair = features.stream().filter(feature -> feature.kind() == Kind.PARALLEL).toList();
+        for (double t : new double[]{0.30, 0.50, 0.70}) {
+            Position a = pair.getFirst().main().position(t, 0);
+            Position b = pair.getLast().main().position(t, 0);
+            double lowRidge = Math.min(region.height(a.x(), a.z()), region.height(b.x(), b.z()));
+            double valley = region.height((a.x() + b.x()) / 2, (a.z() + b.z()) / 2);
+            require(lowRidge - valley >= 70, seed, "并列山脉纵谷下切");
         }
     }
 

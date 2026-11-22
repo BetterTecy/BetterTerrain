@@ -96,6 +96,7 @@ select {
     white-space: nowrap;
 }
 .peak-marker::after { content: ""; position: absolute; top: 100%; left: 50%; height: 11px; border-left: 1px solid #baf1ca; }
+.peak-marker[data-kind="massif"] { color: #ffdf88; border-color: #e0ba69; }
 .markers[data-overview="true"] .peak-marker {
     display: grid;
     place-items: center;

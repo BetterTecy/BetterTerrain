@@ -4,6 +4,10 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.SimpleFileServer;
 import dev.betterterrain.worldgen.landscape.LongMountainRange;
 import dev.betterterrain.worldgen.landscape.LongMountainRange.Position;
+import dev.betterterrain.worldgen.landscape.MixedMountainRegion;
+import dev.betterterrain.worldgen.landscape.MixedMountainRegion.Feature;
+import dev.betterterrain.worldgen.landscape.MixedMountainRegion.Kind;
+import dev.betterterrain.worldgen.landscape.MixedMountainRegion.Ridge;
 import dev.betterterrain.worldgen.landscape.MountainRegion;
 
 import java.io.IOException;
@@ -14,7 +18,9 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 public final class TerrainPreview {
     static final long[] SEEDS = {42L, 12345L};
@@ -52,18 +58,18 @@ public final class TerrainPreview {
         Path directory = Path.of(args[1]).toAbsolutePath();
         List<SeedData> worlds = new ArrayList<>();
         for (long seed : SEEDS) {
-            var region = new MountainRegion(seed);
+            var region = new MixedMountainRegion(seed);
             for (int sample = 0; sample < VIEW_CENTERS.length; sample++) {
                 worlds.add(exportWindow(directory, region, seed, sample, VIEW_CENTERS[sample]));
             }
         }
-        var manifest = new Manifest("betterterrain:long_mountain_preview", 4, SEA_LEVEL, CLOUD_LEVEL,
+        var manifest = new Manifest("betterterrain:mixed_mountain_preview", 5, SEA_LEVEL, CLOUD_LEVEL,
                 WORLD_TOP, BASE_HEIGHT, GRID_SIZE, worlds);
         Files.writeString(directory.resolve("terrain.json"), new Gson().toJson(manifest));
         System.out.printf("已导出 %d 个山脉观察窗口到 %s%n", worlds.size(), directory);
     }
 
-    private static SeedData exportWindow(Path directory, MountainRegion region, long seed, int sample,
+    private static SeedData exportWindow(Path directory, MixedMountainRegion region, long seed, int sample,
                                          int[] center) throws IOException {
         long started = System.nanoTime();
         String seedId = Long.toString(seed);
@@ -71,59 +77,47 @@ public final class TerrainPreview {
         Files.createDirectories(directory.resolve(folder));
         Window overview = grid(directory, region, folder + "/overview", center[0] - OVERVIEW / 2,
                 center[1] - OVERVIEW / 2, OVERVIEW);
-        List<MountainRegion.Band> bands = region.bandsInWindow(overview.x0(), overview.z0(), overview.size());
+        List<Feature> features = region.featuresInWindow(overview.x0(), overview.z0(), overview.size());
         List<Landmark> landmarks = new ArrayList<>();
         List<List<ProfilePoint>> ridges = new ArrayList<>();
-        for (int bandIndex = 0; bandIndex < bands.size(); bandIndex++) {
-            var band = bands.get(bandIndex);
-            ridges.add(longitudinal(region, band.range()));
-            landmarks.add(landmark(directory, folder, region, overview, band, bandIndex));
+        List<List<ProfilePoint>> connections = new ArrayList<>();
+        int rangeCount = 0;
+        for (Feature feature : features) {
+            ridges.add(longitudinal(region, feature.main()));
+            for (Ridge ridge : feature.connections()) connections.add(longitudinal(region, ridge));
+            int number = feature.kind() == Kind.MASSIF ? 0 : ++rangeCount;
+            landmarks.add(landmark(directory, folder, region, overview, feature, landmarks.size(), number));
         }
-        var data = new SeedData(folder, seedId, overview, landmarks, ridges);
-        System.out.printf("种子 %d，中心 (%d, %d)：%d 条山脉，%d 个高程网格，导出耗时 %d ms%n", seed,
-                center[0], center[1], landmarks.size(),
-                1 + 3 * landmarks.size(),
+        var data = new SeedData(folder, seedId, overview, rangeCount, landmarks, ridges, connections);
+        System.out.printf("种子 %d，中心 (%d, %d)：%d 条山脉，%d 片块状山地，导出耗时 %d ms%n", seed,
+                center[0], center[1], rangeCount, landmarks.size() - rangeCount,
                 (System.nanoTime() - started) / 1_000_000L);
         return data;
-    }
-
-    private static double highestSummit(MountainRegion region, MountainRegion.Band band, Window overview) {
-        double bestProgress = 0.5;
-        double bestHeight = Double.NEGATIVE_INFINITY;
-        for (int index = 0; index < band.peakCount(); index++) {
-            double progress = LongMountainRange.summitProgress(index, band.peakCount());
-            Position point = band.range().position(progress, 0);
-            if (!safelyInside(point.x(), overview.x0(), overview.size())
-                    || !safelyInside(point.z(), overview.z0(), overview.size())) continue;
-            double sample = height(region, point);
-            if (sample > bestHeight) {
-                bestHeight = sample;
-                bestProgress = progress;
-            }
-        }
-        return bestProgress;
     }
 
     private static boolean safelyInside(double coordinate, int origin, int size) {
         return coordinate >= origin + 128 && coordinate < origin + size - 128;
     }
 
-    private static Landmark landmark(Path directory, String folder, MountainRegion region, Window overview,
-                                     MountainRegion.Band band, int index) throws IOException {
-        String id = "band-" + band.id().cellX() + "_" + band.id().cellZ() + "_" + band.id().slot();
-        var range = band.range();
-        double along = highestSummit(region, band, overview);
-        Position point = range.position(along, 0);
-        String path = folder + "/" + id;
+    private static Landmark landmark(Path directory, String folder, MixedMountainRegion region, Window overview,
+                                     Feature feature, int index, int number) throws IOException {
+        Position point = feature.summits().stream()
+                .filter(peak -> safelyInside(peak.x(), overview.x0(), overview.size())
+                        && safelyInside(peak.z(), overview.z0(), overview.size()))
+                .max(Comparator.comparingDouble(peak -> region.height(peak.x(), peak.z())))
+                .orElse(feature.anchor());
+        String path = folder + "/" + feature.id();
         Window section = nestedGrid(directory, region, path + "-section", overview, point, SECTION);
         Window detail = nestedGrid(directory, region, path + "-detail", section, point, DETAIL);
-        Position flank = range.position(along, 84);
+        double direction = feature.main().bearing(0.5) + Math.PI / 2;
+        Position flank = new Position(point.x() + 84 * Math.cos(direction), point.z() + 84 * Math.sin(direction));
         Window blocks = nestedGrid(directory, region, path + "-blocks", detail, flank, BLOCKS);
-        return new Landmark(id, index, point.x(), point.z(), height(region, point),
-                section, detail, blocks, transverse(region, range, along));
+        return new Landmark(feature.id(), index, number, feature.kind().name().toLowerCase(Locale.ROOT),
+                point.x(), point.z(), region.height(point.x(), point.z()), section, detail, blocks,
+                transverse(region, point, direction, feature.kind() == Kind.PARALLEL ? 2_280 : 1_200));
     }
 
-    private static Window nestedGrid(Path directory, MountainRegion region, String path, Window parent,
+    private static Window nestedGrid(Path directory, MixedMountainRegion region, String path, Window parent,
                                      Position center, int size) throws IOException {
         int step = parent.stride();
         int x = nestedOrigin(center.x(), size, parent.x0(), parent.size(), step);
@@ -147,7 +141,7 @@ public final class TerrainPreview {
         return Math.clamp(desired, origin + alignment, origin + parentSize - size - alignment);
     }
 
-    private static Window grid(Path directory, MountainRegion region, String name,
+    private static Window grid(Path directory, MixedMountainRegion region, String name,
                                int x0, int z0, int size) throws IOException {
         String file = name + ".i16";
         int stride = size / GRID_SIZE;
@@ -156,7 +150,8 @@ public final class TerrainPreview {
         int maximum = Integer.MIN_VALUE;
         for (int row = 0; row < GRID_SIZE; row++) {
             for (int column = 0; column < GRID_SIZE; column++) {
-                int height = columnHeight(region, x0 + column * stride, z0 + row * stride, stride);
+                int height = (int) Math.floor(region.height(x0 + column * stride + stride / 2,
+                        z0 + row * stride + stride / 2));
                 bytes.putShort((short) height);
                 minimum = Math.min(minimum, height);
                 maximum = Math.max(maximum, height);
@@ -183,11 +178,24 @@ public final class TerrainPreview {
         return points;
     }
 
-    private static List<ProfilePoint> transverse(MountainRegion region, LongMountainRange range, double along) {
+    private static List<ProfilePoint> longitudinal(MixedMountainRegion region, Ridge ridge) {
         List<ProfilePoint> points = new ArrayList<>();
-        for (int across = -1_200; across <= 1_200; across += 12) {
-            Position point = range.position(along, across);
-            points.add(new ProfilePoint(point.x(), point.z(), across + 1_200, height(region, point)));
+        for (int index = 0; index <= 128; index++) {
+            double progress = index / 128.0;
+            Position point = ridge.position(progress, 0);
+            points.add(new ProfilePoint(point.x(), point.z(), progress * ridge.length(), region.height(point.x(), point.z())));
+        }
+        return points;
+    }
+
+    private static List<ProfilePoint> transverse(MixedMountainRegion region, Position crest, double direction, int radius) {
+        List<ProfilePoint> points = new ArrayList<>();
+        double x = Math.cos(direction);
+        double z = Math.sin(direction);
+        for (int across = -radius; across <= radius; across += 12) {
+            double sampleX = crest.x() + across * x;
+            double sampleZ = crest.z() + across * z;
+            points.add(new ProfilePoint(sampleX, sampleZ, across + radius, region.height(sampleX, sampleZ)));
         }
         return points;
     }
@@ -199,9 +207,10 @@ public final class TerrainPreview {
     record Manifest(String preset, int version, int seaLevel, int cloudLevel, int worldTop,
                     double baseHeight, int gridSize, List<SeedData> seeds) {}
 
-    record SeedData(String id, String seed, Window overview, List<Landmark> landmarks, List<List<ProfilePoint>> ridges) {}
+    record SeedData(String id, String seed, Window overview, int rangeCount, List<Landmark> landmarks,
+                    List<List<ProfilePoint>> ridges, List<List<ProfilePoint>> connections) {}
 
-    record Landmark(String id, int band, double x, double z, double y,
+    record Landmark(String id, int band, int number, String kind, double x, double z, double y,
                     Window section, Window detail, Window blocks, List<ProfilePoint> cross) {}
 
     record Window(String file, int x0, int z0, int size, int stride, int min, int max) {}

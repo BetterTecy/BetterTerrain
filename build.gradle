@@ -70,7 +70,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_25
 }
 
-def previewData = layout.buildDirectory.dir('terrain-preview/block-data-v4')
+def previewData = layout.buildDirectory.dir('terrain-preview/block-data-v5')
 def previewSite = layout.buildDirectory.dir('terrain-preview/site')
 def previewClasspath = sourceSets.terrainPreview.runtimeClasspath
 def previewMain = 'dev.betterterrain.preview.TerrainPreview'

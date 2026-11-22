@@ -1,8 +1,16 @@
 import * as THREE from "three";
 import { OrbitControls } from "./vendor/examples/jsm/controls/OrbitControls.js";
-import { blockGeometry, column } from "./block-geometry.js";
+import { blockGeometry, column, contains } from "./block-geometry.js";
 import { createBlockMaterials } from "./block-materials.js";
 import { FlightControls } from "./flight-controls.js";
+
+export const landforms = {
+    long: { name: "长条山脉", color: "#d7f4df" },
+    arc: { name: "弧形山脉", color: "#8bd2ff" },
+    parallel: { name: "并列山脉", color: "#ffc58c" },
+    branched: { name: "分支山脉", color: "#e4b8ff" },
+    massif: { name: "块状山地", color: "#f4db8e" },
+};
 
 const colors = [
     [118, new THREE.Color("#5e9136")],
@@ -67,6 +75,11 @@ export class TerrainView {
         this.cloud.position.y = cloudLevel;
         this.cloud.visible = false;
         this.scene.add(this.cloud);
+        this.ridgeLines = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({
+            vertexColors: true, depthTest: false, depthWrite: false, transparent: true, opacity: 0.78,
+        }));
+        this.ridgeLines.renderOrder = 2;
+        this.scene.add(this.ridgeLines);
 
         this.meshes = [];
         this.markers = [];
@@ -108,15 +121,17 @@ export class TerrainView {
         if (this.flight.active) this.clampFlight(this.camera.position);
         if (this.world !== world) {
             this.world = world;
+            this.setRidgeLines(world);
             const { x0, z0, size } = world.overview;
             this.cloud.position.x = x0 + size / 2;
             this.cloud.position.z = z0 + size / 2;
             this.cloud.scale.set(size, size, 1);
             this.markerLayer.replaceChildren();
-            this.markers = world.landmarks.map((point, index) => {
+            this.markers = world.landmarks.map(point => {
                 const label = document.createElement("span");
                 label.className = "peak-marker";
-                label.append(String(index + 1));
+                label.dataset.kind = point.kind;
+                label.append(point.number || "M");
                 const altitude = document.createElement("span");
                 altitude.className = "peak-altitude";
                 altitude.textContent = ` · Y ${point.y.toFixed(1)}`;
@@ -125,8 +140,31 @@ export class TerrainView {
                 return { label, position: new THREE.Vector3(point.x, point.y, point.z) };
             });
         }
+        this.ridgeLines.visible = layers.length === 1 && !this.flight.active;
         this.markerLayer.dataset.overview = layers.length === 1;
         this.draw();
+    }
+
+    setRidgeLines(world) {
+        const locations = [];
+        const colors = [];
+        const add = (path, color) => {
+            const { r, g, b } = new THREE.Color(color);
+            for (let index = 1; index < path.length; index++) {
+                const first = path[index - 1];
+                const second = path[index];
+                if (!contains(world.overview, first.x, first.z) || !contains(world.overview, second.x, second.z)) continue;
+                locations.push(first.x, first.height + 8, first.z, second.x, second.height + 8, second.z);
+                colors.push(r, g, b, r, g, b);
+            }
+        };
+        world.connections.forEach(path => add(path, "#edd9f7"));
+        world.landmarks.forEach(point => add(world.ridges[point.band], landforms[point.kind].color));
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(locations, 3));
+        geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+        this.ridgeLines.geometry.dispose();
+        this.ridgeLines.geometry = geometry;
     }
 
     focus(window, level, reset = false) {

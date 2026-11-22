@@ -1,5 +1,5 @@
 import { Color, SRGBColorSpace } from "three";
-import { TerrainView, heightColor } from "./terrain-view.js";
+import { TerrainView, heightColor, landforms } from "./terrain-view.js";
 import { contains } from "./block-geometry.js";
 
 const elements = Object.fromEntries(
@@ -51,7 +51,7 @@ function point() {
 }
 
 function name(landmark) {
-    return `山脉 ${landmark.band + 1}`;
+    return landforms[landmark.kind].name;
 }
 
 function chooseLandmark(id) {
@@ -130,7 +130,8 @@ function followCamera(target, distance) {
 
 function updateSelection() {
     const landmark = point();
-    elements.length.textContent = `${world.ridges.length} 条山脉`;
+    const massifs = world.landmarks.length - world.rangeCount;
+    elements.length.textContent = `${world.rangeCount} 条山脉${massifs ? ` · ${massifs} 片山地` : ""}`;
     elements["point-name"].textContent = name(landmark);
     elements.elevation.textContent = `Y ${formatHeight.format(landmark.y)}`;
     elements.position.textContent = `X ${formatInteger.format(landmark.x)} · Z ${formatInteger.format(landmark.z)}`;
@@ -187,7 +188,7 @@ async function show() {
 function prepareMap(heights) {
     const { width, height } = elements.map;
     const { x0, z0, stride, size } = world.overview;
-    const ridgePoints = world.ridges.flat();
+    const ridgePoints = [...world.ridges, ...world.connections].flat();
     const minX = Math.max(x0, Math.min(...ridgePoints.map(sample => sample.x)));
     const maxX = Math.min(x0 + size, Math.max(...ridgePoints.map(sample => sample.x)));
     const minZ = Math.max(z0, Math.min(...ridgePoints.map(sample => sample.z)));
@@ -218,7 +219,7 @@ function prepareMap(heights) {
     }
     const project = position => ({ x: (position.x - left) * scale, y: (position.z - top) * scale });
     mapBackground = { image, project, scale };
-    screenPoints = world.landmarks.map(landmark => ({ ...project(landmark), id: landmark.id }));
+    screenPoints = world.landmarks.map(landmark => ({ ...project(landmark), landmark, id: landmark.id }));
 }
 
 function drawMap(window) {
@@ -230,29 +231,35 @@ function drawMap(window) {
     ctx.lineWidth = 2;
     ctx.strokeStyle = "#d1ffdcbb";
     ctx.strokeRect(origin.x, origin.y, window.size * scale, window.size * scale);
-    ctx.beginPath();
-    world.ridges.forEach(ridge => {
+    ctx.setLineDash([]);
+    function ridgePath(ridge, color, width) {
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
         ridge.forEach((sample, index) => {
             const position = project(sample);
             if (index === 0) ctx.moveTo(position.x, position.y);
             else ctx.lineTo(position.x, position.y);
         });
-    });
-    ctx.stroke();
-    ctx.setLineDash([]);
+        ctx.stroke();
+    }
+    world.connections.forEach(ridge => ridgePath(ridge, "#e9e0f0aa", 1.15));
+    world.landmarks.forEach(landmark => ridgePath(world.ridges[landmark.band], landforms[landmark.kind].color, 1.65));
     ctx.font = "bold 14px system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    screenPoints.forEach((position, index) => {
+    screenPoints.forEach(position => {
         const active = position.id === selected;
+        const { landmark } = position;
+        const color = landforms[landmark.kind].color;
         ctx.beginPath();
         ctx.arc(position.x, position.y, active ? 13 : 11, 0, Math.PI * 2);
-        ctx.fillStyle = active ? "#c6f5d4" : "#14282a";
+        ctx.fillStyle = active ? color : "#14282a";
         ctx.fill();
-        ctx.strokeStyle = "#d7f4df";
+        ctx.strokeStyle = color;
         ctx.stroke();
-        ctx.fillStyle = active ? "#182b26" : "#e0f3e9";
-        ctx.fillText(String(index + 1), position.x, position.y);
+        ctx.fillStyle = active ? "#182b26" : color;
+        ctx.fillText(landmark.number || "M", position.x, position.y);
     });
 }
 
@@ -306,12 +313,14 @@ function selectSample(id) {
     world = manifest.seeds.find(entry => entry.id === id);
     selected = world.landmarks[0].id;
     elements.landmarks.replaceChildren();
-    world.landmarks.forEach((landmark, index) => {
+    world.landmarks.forEach(landmark => {
         const button = document.createElement("button");
         button.type = "button";
         button.dataset.landmark = landmark.id;
+        button.dataset.kind = landmark.kind;
         const marker = document.createElement("span");
-        marker.textContent = String(index + 1);
+        marker.textContent = landmark.number || "M";
+        marker.style.color = landforms[landmark.kind].color;
         marker.setAttribute("aria-hidden", "true");
         button.append(marker, name(landmark));
         button.addEventListener("click", () => chooseLandmark(landmark.id));
