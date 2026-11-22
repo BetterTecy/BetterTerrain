@@ -8,6 +8,22 @@ base { archivesName = project.archives_base_name }
 
 repositories {
     // Loom 提供 Minecraft 和 Fabric 依赖仓库。
+    mavenCentral()
+}
+
+sourceSets {
+    terrainPreview {
+        java.srcDir 'preview/java'
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    terrainPreviewThree {
+        canBeConsumed = false
+        transitive = false
+    }
 }
 
 loom {
@@ -30,6 +46,8 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    terrainPreviewImplementation 'com.google.code.gson:gson:2.14.0'
+    terrainPreviewThree 'org.mvnpm:three:0.180.0'
 }
 
 def resourceVersion = project.version.toString()
@@ -50,4 +68,57 @@ java {
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
+}
+
+def previewData = layout.buildDirectory.dir('terrain-preview/block-data-v4')
+def previewSite = layout.buildDirectory.dir('terrain-preview/site')
+def previewClasspath = sourceSets.terrainPreview.runtimeClasspath
+def previewMain = 'dev.betterterrain.preview.TerrainPreview'
+
+tasks.register('exportTerrainPreview', JavaExec) {
+    classpath = previewClasspath
+    mainClass = previewMain
+    args 'export', previewData.get().asFile.absolutePath
+    outputs.dir previewData
+}
+
+tasks.register('terrainPreview', Sync) {
+    dependsOn tasks.named('exportTerrainPreview')
+    into previewSite
+    from 'preview/web'
+    from(previewData) { into 'data' }
+    from({ zipTree(configurations.terrainPreviewThree.singleFile) }) {
+        include 'META-INF/resources/_static/three/0.180.0/build/three.module.min.js'
+        include 'META-INF/resources/_static/three/0.180.0/build/three.core.min.js'
+        include 'META-INF/resources/_static/three/0.180.0/examples/jsm/controls/OrbitControls.js'
+        include 'META-INF/resources/_static/three/0.180.0/LICENSE'
+        includeEmptyDirs = false
+        eachFile {
+            relativePath = new RelativePath(true, (['vendor'] + relativePath.segments.toList().drop(5)) as String[])
+        }
+    }
+}
+
+tasks.register('serveTerrainPreview', JavaExec) {
+    dependsOn tasks.named('terrainPreview')
+    classpath = previewClasspath
+    mainClass = previewMain
+    args 'serve', previewSite.get().asFile.absolutePath,
+            providers.gradleProperty('terrainPreviewPort').getOrElse('8765')
+}
+
+tasks.register('checkTerrainPreview', JavaExec) {
+    classpath = previewClasspath
+    mainClass = previewMain
+    args 'check'
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('checkTerrainPreview')
+}
+
+tasks.register('stageMinecraftPreview', Sync) {
+    from(tasks.named('jar'))
+    into layout.buildDirectory.dir('minecraft-preview-install')
+    rename { 'betterterrain-preview.jar' }
 }
